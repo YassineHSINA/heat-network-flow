@@ -1,24 +1,158 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useStore, computeMetrics } from "@/lib/store";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Flame, Zap, Gauge, Leaf, Factory, AlertTriangle } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell, Legend, CartesianGrid,
+} from "recharts";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Tableau de bord — HeatNet" },
+      { name: "description", content: "Vue d'ensemble du réseau de chaleur : production, consommation, rendement, CO₂ évité." },
+    ],
+  }),
+  component: Dashboard,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function KpiCard({ icon: Icon, label, value, unit, tint }: { icon: any; label: string; value: string; unit?: string; tint: "blue" | "orange" | "green" | "red" }) {
+  const tints = {
+    blue: "bg-primary/10 text-primary",
+    orange: "bg-secondary/20 text-secondary",
+    green: "bg-emerald-500/15 text-emerald-600",
+    red: "bg-destructive/15 text-destructive",
+  };
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <Card className="overflow-hidden">
+      <CardContent className="flex items-center gap-4 p-5">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${tints[tint]}`}>
+          <Icon className="h-6 w-6" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">
+            {value}
+            {unit && <span className="ml-1 text-sm font-normal text-muted-foreground">{unit}</span>}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Dashboard() {
+  const state = useStore();
+  const m = computeMetrics(state);
+
+  const producerData = state.producers.map((p) => ({
+    name: p.nom,
+    puissance: +(p.puissance * (p.disponibilite / 100)).toFixed(2),
+  }));
+  const consumerData = state.consumers.map((c) => ({
+    name: c.nom,
+    besoin: c.besoin,
+    consommation: c.consommation,
+  }));
+  const trend = Array.from({ length: 12 }, (_, i) => ({
+    mois: ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][i],
+    prod: +(m.production * (0.7 + Math.random() * 0.5)).toFixed(1),
+    cons: +(m.consommation * (0.7 + Math.random() * 0.5)).toFixed(1),
+  }));
+  const priorites = ["Haute", "Moyenne", "Basse"].map((p) => ({
+    name: p,
+    value: state.consumers.filter((c) => c.priorite === p).length,
+  }));
+  const COLORS = ["var(--color-chart-2)", "var(--color-chart-1)", "var(--color-chart-3)"];
+
+  return (
+    <div className="space-y-6">
+      <div
+        className="rounded-2xl p-6 text-primary-foreground shadow-lg"
+        style={{ background: "var(--gradient-heat)" }}
+      >
+        <p className="text-sm opacity-90">Supervision temps réel</p>
+        <h2 className="text-2xl font-bold md:text-3xl">Réseau de chaleur fatale</h2>
+        <p className="mt-1 text-sm opacity-90">
+          {state.producers.length} usines connectées · {state.consumers.length} bâtiments alimentés · {m.alertesActives} alerte(s) active(s)
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <KpiCard icon={Flame} label="Production" value={m.production.toFixed(1)} unit="MW" tint="orange" />
+        <KpiCard icon={Zap} label="Consommation" value={m.consommation.toFixed(1)} unit="MW" tint="blue" />
+        <KpiCard icon={Gauge} label="Rendement" value={m.rendement.toFixed(1)} unit="%" tint="blue" />
+        <KpiCard icon={Leaf} label="CO₂ évité / an" value={(m.co2Evite / 1000).toFixed(1)} unit="kt" tint="green" />
+        <KpiCard icon={Factory} label="Usines" value={String(m.nbUsines)} tint="orange" />
+        <KpiCard icon={AlertTriangle} label="Alertes" value={String(m.alertesActives)} tint="red" />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader><CardTitle className="text-base">Production par usine (MW)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer>
+              <BarChart data={producerData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="puissance" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Besoin vs consommation (MW)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer>
+              <BarChart data={consumerData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="besoin" fill="var(--color-chart-1)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="consommation" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader><CardTitle className="text-base">Évolution annuelle (MW)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer>
+              <LineChart data={trend}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="prod" name="Production" stroke="var(--color-chart-2)" strokeWidth={2} />
+                <Line type="monotone" dataKey="cons" name="Consommation" stroke="var(--color-chart-1)" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Priorités consommateurs</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={priorites} dataKey="value" nameKey="name" outerRadius={90} label>
+                  {priorites.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
