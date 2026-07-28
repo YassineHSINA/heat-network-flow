@@ -28,7 +28,7 @@ export type NetworkSegment = {
   pertes: number; // %
 };
 
-export type AlertType = "Température insuffisante" | "Fuite" | "Pompe en panne" | "Maintenance nécessaire";
+export type AlertType = "Température insuffisante" | "Fuite" | "Pompe en panne" | "Maintenance nécessaire" | "Batterie faible";
 export type Alert = {
   id: string;
   type: AlertType;
@@ -46,12 +46,32 @@ export type Maintenance = {
   rapport: string;
 };
 
+export type BatteryStatus = "Charge" | "Décharge" | "Repos" | "Défaut";
+export type Battery = {
+  id: string;
+  nom: string;
+  capacite: number; // kWh
+  charge: number; // % (0-100)
+  puissance: number; // kW (>0 charge, <0 décharge)
+  etat: BatteryStatus;
+  cycles: number;
+};
+
+export type TrendPoint = {
+  t: number; // timestamp
+  production: number; // MW
+  consommation: number; // MW
+  batterie: number; // % moyen
+};
+
 type State = {
   producers: Producer[];
   consumers: Consumer[];
   segments: NetworkSegment[];
   alerts: Alert[];
   maintenances: Maintenance[];
+  batteries: Battery[];
+  trend: TrendPoint[];
   addProducer: (p: Omit<Producer, "id">) => void;
   updateProducer: (id: string, p: Partial<Producer>) => void;
   deleteProducer: (id: string) => void;
@@ -65,13 +85,20 @@ type State = {
   closeAlert: (id: string) => void;
   addMaintenance: (m: Omit<Maintenance, "id">) => void;
   deleteMaintenance: (id: string) => void;
+  addBattery: (b: Omit<Battery, "id">) => void;
+  updateBattery: (id: string, b: Partial<Battery>) => void;
+  deleteBattery: (id: string) => void;
+  tickSimulation: () => void;
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+const jitter = (v: number, pct: number) => v * (1 + (Math.random() - 0.5) * pct);
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+
 export const useStore = create<State>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       producers: [
         { id: uid(), nom: "Aciérie Nord", temperature: 180, debit: 320, puissance: 12.5, disponibilite: 96 },
         { id: uid(), nom: "Data Center Est", temperature: 65, debit: 180, puissance: 4.2, disponibilite: 99 },
@@ -101,6 +128,13 @@ export const useStore = create<State>()(
         { id: uid(), technicien: "Sophie Laurent", date: "2026-06-28", cible: "Tronçon A1", rapport: "Purge et calibrage capteurs de pression." },
         { id: uid(), technicien: "Karim Benali", date: "2026-05-10", cible: "Data Center Est", rapport: "Installation nouvelle sonde température." },
       ],
+      batteries: [
+        { id: uid(), nom: "Bloc BESS-01", capacite: 2400, charge: 78, puissance: 220, etat: "Charge", cycles: 412 },
+        { id: uid(), nom: "Bloc BESS-02", capacite: 2400, charge: 64, puissance: -180, etat: "Décharge", cycles: 389 },
+        { id: uid(), nom: "Bloc BESS-03", capacite: 1200, charge: 92, puissance: 0, etat: "Repos", cycles: 156 },
+        { id: uid(), nom: "Bloc Tampon T-04", capacite: 600, charge: 45, puissance: -75, etat: "Décharge", cycles: 823 },
+      ],
+      trend: [],
       addProducer: (p) => set((s) => ({ producers: [...s.producers, { ...p, id: uid() }] })),
       updateProducer: (id, p) => set((s) => ({ producers: s.producers.map((x) => (x.id === id ? { ...x, ...p } : x)) })),
       deleteProducer: (id) => set((s) => ({ producers: s.producers.filter((x) => x.id !== id) })),
@@ -114,21 +148,68 @@ export const useStore = create<State>()(
       closeAlert: (id) => set((s) => ({ alerts: s.alerts.map((a) => (a.id === id ? { ...a, fermee: true } : a)) })),
       addMaintenance: (m) => set((s) => ({ maintenances: [{ ...m, id: uid() }, ...s.maintenances] })),
       deleteMaintenance: (id) => set((s) => ({ maintenances: s.maintenances.filter((x) => x.id !== id) })),
+      addBattery: (b) => set((s) => ({ batteries: [...s.batteries, { ...b, id: uid() }] })),
+      updateBattery: (id, b) => set((s) => ({ batteries: s.batteries.map((x) => (x.id === id ? { ...x, ...b } : x)) })),
+      deleteBattery: (id) => set((s) => ({ batteries: s.batteries.filter((x) => x.id !== id) })),
+      tickSimulation: () => {
+        const s = get();
+        const producers = s.producers.map((p) => ({
+          ...p,
+          temperature: +clamp(jitter(p.temperature, 0.03), 40, 260).toFixed(1),
+          debit: +clamp(jitter(p.debit, 0.05), 50, 600).toFixed(0),
+          puissance: +clamp(jitter(p.puissance, 0.04), 0.5, 30).toFixed(2),
+        }));
+        const consumers = s.consumers.map((c) => ({
+          ...c,
+          consommation: +clamp(jitter(c.consommation, 0.06), 0.1, c.besoin * 1.05).toFixed(2),
+        }));
+        const batteries = s.batteries.map((b) => {
+          if (b.etat === "Défaut") return b;
+          const dt = 5 / 3600; // 5s in hours
+          const deltaPct = ((b.puissance * dt) / b.capacite) * 100;
+          let charge = clamp(b.charge + deltaPct + (Math.random() - 0.5) * 0.2, 0, 100);
+          let etat: BatteryStatus = b.etat;
+          let puissance = b.puissance;
+          if (charge >= 99 && puissance > 0) { etat = "Repos"; puissance = 0; }
+          if (charge <= 5 && puissance < 0) { etat = "Repos"; puissance = 0; }
+          if (etat === "Repos" && Math.random() < 0.15) {
+            etat = Math.random() < 0.5 ? "Charge" : "Décharge";
+            puissance = (etat === "Charge" ? 1 : -1) * (b.capacite * 0.08);
+          }
+          return { ...b, charge: +charge.toFixed(1), etat, puissance: +puissance.toFixed(0) };
+        });
+        const production = producers.reduce((a, p) => a + p.puissance * (p.disponibilite / 100), 0);
+        const consommation = consumers.reduce((a, c) => a + c.consommation, 0);
+        const batAvg = batteries.length ? batteries.reduce((a, b) => a + b.charge, 0) / batteries.length : 0;
+        const trend = [
+          ...s.trend,
+          { t: Date.now(), production: +production.toFixed(2), consommation: +consommation.toFixed(2), batterie: +batAvg.toFixed(1) },
+        ].slice(-60);
+        set({ producers, consumers, batteries, trend });
+      },
     }),
-    { name: "heatnet-store" },
+    {
+      name: "heatnet-store",
+      partialize: (s) => ({
+        producers: s.producers, consumers: s.consumers, segments: s.segments,
+        alerts: s.alerts, maintenances: s.maintenances, batteries: s.batteries,
+      }),
+    },
   ),
 );
 
 // CO2 evité : hypothèse ~ 0.234 tCO2 / MWh gaz évité
 export const CO2_FACTOR_T_PER_MWH = 0.234;
 
-export function computeMetrics(state: Pick<State, "producers" | "consumers" | "segments" | "alerts">) {
+export function computeMetrics(state: Pick<State, "producers" | "consumers" | "segments" | "alerts" | "batteries">) {
   const production = state.producers.reduce((a, p) => a + p.puissance * (p.disponibilite / 100), 0);
   const consommation = state.consumers.reduce((a, c) => a + c.consommation, 0);
   const rendement = production > 0 ? Math.min(100, (consommation / production) * 100) : 0;
-  // CO2 evité annuel (t) = énergie livrée * facteur * 8760h
   const co2Evite = consommation * CO2_FACTOR_T_PER_MWH * 8760;
   const alertesActives = state.alerts.filter((a) => !a.fermee).length;
+  const capaciteTotale = state.batteries.reduce((a, b) => a + b.capacite, 0);
+  const energieStockee = state.batteries.reduce((a, b) => a + (b.capacite * b.charge) / 100, 0);
+  const chargeMoyenne = capaciteTotale > 0 ? (energieStockee / capaciteTotale) * 100 : 0;
   return {
     production,
     consommation,
@@ -136,5 +217,9 @@ export function computeMetrics(state: Pick<State, "producers" | "consumers" | "s
     co2Evite,
     alertesActives,
     nbUsines: state.producers.length,
+    capaciteTotale,
+    energieStockee,
+    chargeMoyenne,
+    nbBatteries: state.batteries.length,
   };
 }
