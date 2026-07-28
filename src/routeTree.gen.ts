@@ -13,6 +13,7 @@ import { Route as ReseauRouteImport } from './routes/reseau'
 import { Route as ProducteursRouteImport } from './routes/producteurs'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as ConsommateursRouteImport } from './routes/consommateurs'
+import { Route as BatteriesRouteImport } from './routes/batteries'
 import { Route as AlertesRouteImport } from './routes/alertes'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +37,11 @@ const ConsommateursRoute = ConsommateursRouteImport.update({
   path: '/consommateurs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BatteriesRoute = BatteriesRouteImport.update({
+  id: '/batteries',
+  path: '/batteries',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertesRoute = AlertesRouteImport.update({
   id: '/alertes',
   path: '/alertes',
@@ -50,6 +56,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertes': typeof AlertesRoute
+  '/batteries': typeof BatteriesRoute
   '/consommateurs': typeof ConsommateursRoute
   '/maintenance': typeof MaintenanceRoute
   '/producteurs': typeof ProducteursRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertes': typeof AlertesRoute
+  '/batteries': typeof BatteriesRoute
   '/consommateurs': typeof ConsommateursRoute
   '/maintenance': typeof MaintenanceRoute
   '/producteurs': typeof ProducteursRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alertes': typeof AlertesRoute
+  '/batteries': typeof BatteriesRoute
   '/consommateurs': typeof ConsommateursRoute
   '/maintenance': typeof MaintenanceRoute
   '/producteurs': typeof ProducteursRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/alertes'
+    | '/batteries'
     | '/consommateurs'
     | '/maintenance'
     | '/producteurs'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/alertes'
+    | '/batteries'
     | '/consommateurs'
     | '/maintenance'
     | '/producteurs'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/alertes'
+    | '/batteries'
     | '/consommateurs'
     | '/maintenance'
     | '/producteurs'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertesRoute: typeof AlertesRoute
+  BatteriesRoute: typeof BatteriesRoute
   ConsommateursRoute: typeof ConsommateursRoute
   MaintenanceRoute: typeof MaintenanceRoute
   ProducteursRoute: typeof ProducteursRoute
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsommateursRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/batteries': {
+      id: '/batteries'
+      path: '/batteries'
+      fullPath: '/batteries'
+      preLoaderRoute: typeof BatteriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alertes': {
       id: '/alertes'
       path: '/alertes'
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertesRoute: AlertesRoute,
+  BatteriesRoute: BatteriesRoute,
   ConsommateursRoute: ConsommateursRoute,
   MaintenanceRoute: MaintenanceRoute,
   ProducteursRoute: ProducteursRoute,
