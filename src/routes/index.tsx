@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore, computeMetrics } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Zap, Gauge, Leaf, Factory, AlertTriangle } from "lucide-react";
+import { Flame, Zap, Gauge, Leaf, Factory, AlertTriangle, Battery } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell, Legend, CartesianGrid,
+  PieChart, Pie, Cell, Legend, CartesianGrid, Area, AreaChart,
 } from "recharts";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Tableau de bord — HeatNet" },
-      { name: "description", content: "Vue d'ensemble du réseau de chaleur : production, consommation, rendement, CO₂ évité." },
+      { name: "description", content: "Vue d'ensemble du réseau de chaleur : production, consommation, rendement, CO₂ évité, stockage." },
     ],
   }),
   component: Dashboard,
@@ -55,10 +55,11 @@ function Dashboard() {
     besoin: c.besoin,
     consommation: c.consommation,
   }));
-  const trend = Array.from({ length: 12 }, (_, i) => ({
-    mois: ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][i],
-    prod: +(m.production * (0.7 + Math.random() * 0.5)).toFixed(1),
-    cons: +(m.consommation * (0.7 + Math.random() * 0.5)).toFixed(1),
+  const liveTrend = state.trend.map((p) => ({
+    time: new Date(p.t).toLocaleTimeString("fr-FR", { minute: "2-digit", second: "2-digit" }),
+    prod: p.production,
+    cons: p.consommation,
+    batt: p.batterie,
   }));
   const priorites = ["Haute", "Moyenne", "Basse"].map((p) => ({
     name: p,
@@ -75,20 +76,38 @@ function Dashboard() {
         <p className="text-sm opacity-90">Supervision temps réel</p>
         <h2 className="text-2xl font-bold md:text-3xl">Réseau de chaleur fatale</h2>
         <p className="mt-1 text-sm opacity-90">
-          {state.producers.length} usines connectées · {state.consumers.length} bâtiments alimentés · {m.alertesActives} alerte(s) active(s)
+          {state.producers.length} usines · {state.consumers.length} bâtiments · {state.batteries.length} blocs BESS · {m.alertesActives} alerte(s) active(s)
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
         <KpiCard icon={Flame} label="Production" value={m.production.toFixed(1)} unit="MW" tint="orange" />
         <KpiCard icon={Zap} label="Consommation" value={m.consommation.toFixed(1)} unit="MW" tint="blue" />
         <KpiCard icon={Gauge} label="Rendement" value={m.rendement.toFixed(1)} unit="%" tint="blue" />
         <KpiCard icon={Leaf} label="CO₂ évité / an" value={(m.co2Evite / 1000).toFixed(1)} unit="kt" tint="green" />
+        <KpiCard icon={Battery} label="Charge batt." value={m.chargeMoyenne.toFixed(0)} unit="%" tint="green" />
         <KpiCard icon={Factory} label="Usines" value={String(m.nbUsines)} tint="orange" />
         <KpiCard icon={AlertTriangle} label="Alertes" value={String(m.alertesActives)} tint="red" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="lg:col-span-2">
+          <CardHeader><CardTitle className="text-base">Production & consommation — temps réel (MW)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer>
+              <AreaChart data={liveTrend}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Legend />
+                <Area type="monotone" dataKey="prod" name="Production" stroke="var(--color-chart-2)" fill="var(--color-chart-2)" fillOpacity={0.25} strokeWidth={2} isAnimationActive={false} />
+                <Area type="monotone" dataKey="cons" name="Consommation" stroke="var(--color-chart-1)" fill="var(--color-chart-1)" fillOpacity={0.2} strokeWidth={2} isAnimationActive={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader><CardTitle className="text-base">Production par usine (MW)</CardTitle></CardHeader>
           <CardContent className="h-72">
@@ -98,7 +117,7 @@ function Dashboard() {
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Bar dataKey="puissance" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="puissance" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -114,26 +133,24 @@ function Dashboard() {
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="besoin" fill="var(--color-chart-1)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="consommation" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="besoin" fill="var(--color-chart-1)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="consommation" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader><CardTitle className="text-base">Évolution annuelle (MW)</CardTitle></CardHeader>
+        <Card>
+          <CardHeader><CardTitle className="text-base">Charge batteries moyenne (%)</CardTitle></CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer>
-              <LineChart data={trend}>
+              <AreaChart data={liveTrend}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
+                <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="prod" name="Production" stroke="var(--color-chart-2)" strokeWidth={2} />
-                <Line type="monotone" dataKey="cons" name="Consommation" stroke="var(--color-chart-1)" strokeWidth={2} />
-              </LineChart>
+                <Area type="monotone" dataKey="batt" name="Charge %" stroke="var(--color-chart-3)" fill="var(--color-chart-3)" fillOpacity={0.3} strokeWidth={2} isAnimationActive={false} />
+              </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

@@ -1,4 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,7 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Factory, Building2, Network, AlertTriangle, Wrench, Flame } from "lucide-react";
+import { LayoutDashboard, Factory, Building2, Network, AlertTriangle, Wrench, Flame, Battery, Radio } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,6 +22,7 @@ const items = [
   { title: "Producteurs", url: "/producteurs", icon: Factory },
   { title: "Consommateurs", url: "/consommateurs", icon: Building2 },
   { title: "Réseau", url: "/reseau", icon: Network },
+  { title: "Batteries", url: "/batteries", icon: Battery },
   { title: "Alertes", url: "/alertes", icon: AlertTriangle },
   { title: "Maintenance", url: "/maintenance", icon: Wrench },
 ];
@@ -73,7 +75,17 @@ function AppSidebar() {
   );
 }
 
+function useSimulation() {
+  const tick = useStore((s) => s.tickSimulation);
+  useEffect(() => {
+    tick();
+    const id = setInterval(tick, 5000);
+    return () => clearInterval(id);
+  }, [tick]);
+}
+
 export function AppLayout() {
+  useSimulation();
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
@@ -87,6 +99,10 @@ export function AppLayout() {
                 style={{ background: "var(--gradient-heat)" }}
               />
               <h1 className="text-sm font-semibold">Gestion du réseau de chaleur</h1>
+            </div>
+            <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+              <Radio className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
+              <span>Temps réel · 5s</span>
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6">
