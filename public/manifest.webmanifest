@@ -1,0 +1,26 @@
+{
+  "name": "HeatNet — Réseau de chaleur intelligent",
+  "short_name": "HeatNet",
+  "description": "Pilotez producteurs, consommateurs, réseau, batteries et maintenance d'un réseau de chaleur fatale.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
