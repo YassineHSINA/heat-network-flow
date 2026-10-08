@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore, computeMetrics } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Zap, Gauge, Leaf, AlertTriangle, Battery } from "lucide-react";
+import { Flame, Zap, Gauge, Leaf, AlertTriangle, Battery, Factory, Share2 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, CartesianGrid, Area, AreaChart,
@@ -69,6 +69,11 @@ function Dashboard() {
     name: p,
     value: state.consumers.filter((c) => c.priorite === p).length,
   }));
+  const repartition = [
+    { name: "Autoconsommation site", value: +m.autoconsommation.toFixed(2) },
+    { name: "Distribuée au réseau", value: +m.energieDistribuee.toFixed(2) },
+  ];
+  const REPARTITION_COLORS = ["var(--color-chart-2)", "var(--color-chart-1)"];
   const COLORS = ["var(--color-chart-2)", "var(--color-chart-1)", "var(--color-chart-3)"];
 
   return (
@@ -84,8 +89,10 @@ function Dashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-8">
         <KpiCard icon={Flame} label="Production" value={m.production.toFixed(1)} unit="MW" tint="orange" />
+        <KpiCard icon={Factory} label="Autoconso." value={m.autoconsommation.toFixed(1)} unit="MW" tint="orange" />
+        <KpiCard icon={Share2} label="Distribuée" value={m.energieDistribuee.toFixed(1)} unit="MW" tint="blue" />
         <KpiCard icon={Zap} label="Consommation" value={m.consommation.toFixed(1)} unit="MW" tint="blue" />
         <KpiCard icon={Gauge} label="Rendement" value={m.rendement.toFixed(1)} unit="%" tint="blue" />
         <KpiCard icon={Leaf} label="CO₂ évité / an" value={(m.co2Evite / 1000).toFixed(1)} unit="kt" tint="green" />
@@ -155,6 +162,21 @@ function Dashboard() {
                 <Tooltip />
                 <Area type="monotone" dataKey="batt" name="Charge %" stroke="var(--color-chart-3)" fill="var(--color-chart-3)" fillOpacity={0.3} strokeWidth={2} isAnimationActive={false} />
               </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Répartition de l'énergie produite (MW)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={repartition} dataKey="value" nameKey="name" outerRadius={90} label>
+                  {repartition.map((_, i) => <Cell key={i} fill={REPARTITION_COLORS[i]} />)}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
