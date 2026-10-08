@@ -235,6 +235,8 @@ export function computeMetrics(state: Pick<State, "producers" | "consumers" | "s
   const chargeMoyenne = capaciteTotale > 0 ? (energieStockee / capaciteTotale) * 100 : 0;
   return {
     production,
+    autoconsommation,
+    energieDistribuee,
     consommation,
     rendement,
     co2Evite,
