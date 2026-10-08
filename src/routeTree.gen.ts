@@ -9,37 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ReseauRouteImport } from './routes/reseau'
-import { Route as ProducteursRouteImport } from './routes/producteurs'
-import { Route as MaintenanceRouteImport } from './routes/maintenance'
-import { Route as ConsommateursRouteImport } from './routes/consommateurs'
-import { Route as BatteriesRouteImport } from './routes/batteries'
-import { Route as AlertesRouteImport } from './routes/alertes'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AlertesRouteImport } from './routes/alertes'
+import { Route as BatteriesRouteImport } from './routes/batteries'
+import { Route as ConsommateursRouteImport } from './routes/consommateurs'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
+import { Route as ProducteursRouteImport } from './routes/producteurs'
+import { Route as ReseauRouteImport } from './routes/reseau'
 
-const ReseauRoute = ReseauRouteImport.update({
-  id: '/reseau',
-  path: '/reseau',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProducteursRoute = ProducteursRouteImport.update({
-  id: '/producteurs',
-  path: '/producteurs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MaintenanceRoute = MaintenanceRouteImport.update({
-  id: '/maintenance',
-  path: '/maintenance',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConsommateursRoute = ConsommateursRouteImport.update({
-  id: '/consommateurs',
-  path: '/consommateurs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BatteriesRoute = BatteriesRouteImport.update({
-  id: '/batteries',
-  path: '/batteries',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertesRoute = AlertesRouteImport.update({
@@ -47,9 +27,29 @@ const AlertesRoute = AlertesRouteImport.update({
   path: '/alertes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const BatteriesRoute = BatteriesRouteImport.update({
+  id: '/batteries',
+  path: '/batteries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsommateursRoute = ConsommateursRouteImport.update({
+  id: '/consommateurs',
+  path: '/consommateurs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProducteursRoute = ProducteursRouteImport.update({
+  id: '/producteurs',
+  path: '/producteurs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReseauRoute = ReseauRouteImport.update({
+  id: '/reseau',
+  path: '/reseau',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -123,39 +123,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/reseau': {
-      id: '/reseau'
-      path: '/reseau'
-      fullPath: '/reseau'
-      preLoaderRoute: typeof ReseauRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/producteurs': {
-      id: '/producteurs'
-      path: '/producteurs'
-      fullPath: '/producteurs'
-      preLoaderRoute: typeof ProducteursRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/maintenance': {
-      id: '/maintenance'
-      path: '/maintenance'
-      fullPath: '/maintenance'
-      preLoaderRoute: typeof MaintenanceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/consommateurs': {
-      id: '/consommateurs'
-      path: '/consommateurs'
-      fullPath: '/consommateurs'
-      preLoaderRoute: typeof ConsommateursRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/batteries': {
-      id: '/batteries'
-      path: '/batteries'
-      fullPath: '/batteries'
-      preLoaderRoute: typeof BatteriesRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alertes': {
@@ -165,11 +137,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/batteries': {
+      id: '/batteries'
+      path: '/batteries'
+      fullPath: '/batteries'
+      preLoaderRoute: typeof BatteriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consommateurs': {
+      id: '/consommateurs'
+      path: '/consommateurs'
+      fullPath: '/consommateurs'
+      preLoaderRoute: typeof ConsommateursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/producteurs': {
+      id: '/producteurs'
+      path: '/producteurs'
+      fullPath: '/producteurs'
+      preLoaderRoute: typeof ProducteursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reseau': {
+      id: '/reseau'
+      path: '/reseau'
+      fullPath: '/reseau'
+      preLoaderRoute: typeof ReseauRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
