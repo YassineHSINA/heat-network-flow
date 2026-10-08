@@ -13,8 +13,12 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 export const Route = createFileRoute("/producteurs")({
   head: () => ({
     meta: [
-      { title: "Producteurs — HeatNet" },
-      { name: "description", content: "Gestion des usines productrices de chaleur fatale." },
+      { title: "Fours — HeatNet" },
+      { name: "description", content: "Supervision des quatre fours : température, débit, puissance récupérable et disponibilité." },
+      { property: "og:title", content: "Fours — HeatNet" },
+      { property: "og:description", content: "Supervision des quatre fours : température, débit, puissance récupérable et disponibilité." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProducteursPage,
@@ -40,17 +44,17 @@ function ProducteursPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Producteurs</h2>
-          <p className="text-sm text-muted-foreground">Usines de récupération de chaleur fatale</p>
+          <h2 className="text-2xl font-bold">Fours</h2>
+          <p className="text-sm text-muted-foreground">Fours de récupération de chaleur fatale</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" /> Ajouter</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>{editing ? "Modifier" : "Nouvelle"} usine</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editing ? "Modifier le" : "Nouveau"} four</DialogTitle></DialogHeader>
             <div className="grid gap-3">
-              <div><Label>Nom</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} /></div>
+              <div><Label htmlFor="four-nom">Nom du four</Label><Input id="four-nom" value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Température (°C)</Label><Input type="number" value={form.temperature} onChange={(e) => setForm({ ...form, temperature: +e.target.value })} /></div>
                 <div><Label>Débit (m³/h)</Label><Input type="number" value={form.debit} onChange={(e) => setForm({ ...form, debit: +e.target.value })} /></div>
@@ -67,7 +71,7 @@ function ProducteursPage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Liste des usines ({producers.length})</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Liste des fours ({producers.length})</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -93,8 +97,8 @@ function ProducteursPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" onClick={() => deleteProducer(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={`Modifier ${p.nom}`} title={`Modifier ${p.nom}`} onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={`Supprimer ${p.nom}`} title={`Supprimer ${p.nom}`} onClick={() => deleteProducer(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </TableCell>
                 </TableRow>
               ))}

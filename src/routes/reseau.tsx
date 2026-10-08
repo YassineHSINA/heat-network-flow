@@ -14,6 +14,10 @@ export const Route = createFileRoute("/reseau")({
     meta: [
       { title: "Réseau — HeatNet" },
       { name: "description", content: "Tronçons du réseau de distribution : températures, débits, pertes." },
+      { property: "og:title", content: "Réseau — HeatNet" },
+      { property: "og:description", content: "Tronçons du réseau de distribution : températures, débits, pertes." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Page,

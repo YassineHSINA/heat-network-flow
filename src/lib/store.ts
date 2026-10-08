@@ -100,10 +100,10 @@ export const useStore = create<State>()(
   persist(
     (set, get) => ({
       producers: [
-        { id: uid(), nom: "Aciérie Nord", temperature: 180, debit: 320, puissance: 12.5, disponibilite: 96 },
-        { id: uid(), nom: "Data Center Est", temperature: 65, debit: 180, puissance: 4.2, disponibilite: 99 },
-        { id: uid(), nom: "Cimenterie Sud", temperature: 220, debit: 410, puissance: 18.3, disponibilite: 88 },
-        { id: uid(), nom: "Verrerie Ouest", temperature: 150, debit: 220, puissance: 7.8, disponibilite: 92 },
+        { id: uid(), nom: "Four 1", temperature: 180, debit: 320, puissance: 12.5, disponibilite: 96 },
+        { id: uid(), nom: "Four 2", temperature: 65, debit: 180, puissance: 4.2, disponibilite: 99 },
+        { id: uid(), nom: "Four 3", temperature: 220, debit: 410, puissance: 18.3, disponibilite: 88 },
+        { id: uid(), nom: "Four 4", temperature: 150, debit: 220, puissance: 7.8, disponibilite: 92 },
       ],
       consumers: [
         { id: uid(), nom: "Hôpital Central", besoin: 6.5, consommation: 5.9, priorite: "Haute" },
@@ -120,13 +120,13 @@ export const useStore = create<State>()(
       ],
       alerts: [
         { id: uid(), type: "Température insuffisante", message: "Tronçon B1 sous seuil (78°C)", date: new Date().toISOString(), cible: "Tronçon B1", fermee: false },
-        { id: uid(), type: "Pompe en panne", message: "Pompe P-04 arrêtée", date: new Date(Date.now() - 3600e3).toISOString(), cible: "Cimenterie Sud", fermee: false },
-        { id: uid(), type: "Maintenance nécessaire", message: "Contrôle annuel échangeur", date: new Date(Date.now() - 86400e3).toISOString(), cible: "Verrerie Ouest", fermee: false },
+        { id: uid(), type: "Pompe en panne", message: "Pompe P-04 arrêtée", date: new Date(Date.now() - 3600e3).toISOString(), cible: "Four 3", fermee: false },
+        { id: uid(), type: "Maintenance nécessaire", message: "Contrôle annuel échangeur", date: new Date(Date.now() - 86400e3).toISOString(), cible: "Four 4", fermee: false },
       ],
       maintenances: [
-        { id: uid(), technicien: "Marc Dubois", date: "2026-07-15", cible: "Aciérie Nord", rapport: "Remplacement joint échangeur principal. RAS." },
+        { id: uid(), technicien: "Marc Dubois", date: "2026-07-15", cible: "Four 1", rapport: "Remplacement joint échangeur principal. RAS." },
         { id: uid(), technicien: "Sophie Laurent", date: "2026-06-28", cible: "Tronçon A1", rapport: "Purge et calibrage capteurs de pression." },
-        { id: uid(), technicien: "Karim Benali", date: "2026-05-10", cible: "Data Center Est", rapport: "Installation nouvelle sonde température." },
+        { id: uid(), technicien: "Karim Benali", date: "2026-05-10", cible: "Four 2", rapport: "Installation nouvelle sonde température." },
       ],
       batteries: [
         { id: uid(), nom: "Bloc BESS-01", capacite: 2400, charge: 78, puissance: 220, etat: "Charge", cycles: 412 },
@@ -190,6 +190,24 @@ export const useStore = create<State>()(
     }),
     {
       name: "heatnet-store",
+      // Normalize legacy demo names without resetting saved measurements or IDs.
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<State> | undefined;
+        const legacyNames: Record<string, string> = {
+          "Aciérie Nord": "Four 1",
+          "Data Center Est": "Four 2",
+          "Cimenterie Sud": "Four 3",
+          "Verrerie Ouest": "Four 4",
+        };
+        const rename = (name: string) => legacyNames[name] ?? name;
+        return {
+          ...current,
+          ...saved,
+          producers: (saved?.producers ?? current.producers).map((p) => ({ ...p, nom: rename(p.nom) })),
+          alerts: (saved?.alerts ?? current.alerts).map((a) => ({ ...a, cible: rename(a.cible) })),
+          maintenances: (saved?.maintenances ?? current.maintenances).map((m) => ({ ...m, cible: rename(m.cible) })),
+        };
+      },
       partialize: (s) => ({
         producers: s.producers, consumers: s.consumers, segments: s.segments,
         alerts: s.alerts, maintenances: s.maintenances, batteries: s.batteries,
@@ -216,7 +234,7 @@ export function computeMetrics(state: Pick<State, "producers" | "consumers" | "s
     rendement,
     co2Evite,
     alertesActives,
-    nbUsines: state.producers.length,
+    nbFours: state.producers.length,
     capaciteTotale,
     energieStockee,
     chargeMoyenne,

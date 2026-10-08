@@ -15,6 +15,10 @@ export const Route = createFileRoute("/maintenance")({
     meta: [
       { title: "Maintenance — HeatNet" },
       { name: "description", content: "Historique des interventions de maintenance sur le réseau." },
+      { property: "og:title", content: "Maintenance — HeatNet" },
+      { property: "og:description", content: "Historique des interventions de maintenance sur le réseau." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Page,
@@ -43,7 +47,7 @@ function Page() {
                 <div><Label>Technicien</Label><Input value={form.technicien} onChange={(e) => setForm({ ...form, technicien: e.target.value })} /></div>
                 <div><Label>Date</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
               </div>
-              <div><Label>Cible</Label><Input value={form.cible} onChange={(e) => setForm({ ...form, cible: e.target.value })} placeholder="Ex : Aciérie Nord" /></div>
+              <div><Label>Cible</Label><Input value={form.cible} onChange={(e) => setForm({ ...form, cible: e.target.value })} placeholder="Ex : Four 1" /></div>
               <div><Label>Rapport</Label><Textarea rows={4} value={form.rapport} onChange={(e) => setForm({ ...form, rapport: e.target.value })} /></div>
             </div>
             <DialogFooter>

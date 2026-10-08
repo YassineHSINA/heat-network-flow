@@ -16,6 +16,10 @@ export const Route = createFileRoute("/alertes")({
     meta: [
       { title: "Alertes — HeatNet" },
       { name: "description", content: "Alertes température, fuites, pannes de pompe, maintenance." },
+      { property: "og:title", content: "Alertes — HeatNet" },
+      { property: "og:description", content: "Alertes température, fuites, pannes de pompe, maintenance." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Page,

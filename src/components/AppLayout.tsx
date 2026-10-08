@@ -13,13 +13,13 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Factory, Building2, Network, AlertTriangle, Wrench, Flame, Battery, Radio } from "lucide-react";
+import { LayoutDashboard, Building2, Network, AlertTriangle, Wrench, Flame, Battery, Radio } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 
 const items = [
   { title: "Tableau de bord", url: "/", icon: LayoutDashboard },
-  { title: "Producteurs", url: "/producteurs", icon: Factory },
+  { title: "Fours", url: "/producteurs", icon: Flame },
   { title: "Consommateurs", url: "/consommateurs", icon: Building2 },
   { title: "Réseau", url: "/reseau", icon: Network },
   { title: "Batteries", url: "/batteries", icon: Battery },
