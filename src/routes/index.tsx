@@ -89,8 +89,10 @@ function Dashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-8">
         <KpiCard icon={Flame} label="Production" value={m.production.toFixed(1)} unit="MW" tint="orange" />
+        <KpiCard icon={Factory} label="Autoconso." value={m.autoconsommation.toFixed(1)} unit="MW" tint="orange" />
+        <KpiCard icon={Share2} label="Distribuée" value={m.energieDistribuee.toFixed(1)} unit="MW" tint="blue" />
         <KpiCard icon={Zap} label="Consommation" value={m.consommation.toFixed(1)} unit="MW" tint="blue" />
         <KpiCard icon={Gauge} label="Rendement" value={m.rendement.toFixed(1)} unit="%" tint="blue" />
         <KpiCard icon={Leaf} label="CO₂ évité / an" value={(m.co2Evite / 1000).toFixed(1)} unit="kt" tint="green" />
