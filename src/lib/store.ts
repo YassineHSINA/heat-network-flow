@@ -219,8 +219,13 @@ export const useStore = create<State>()(
 // CO2 evité : hypothèse ~ 0.234 tCO2 / MWh gaz évité
 export const CO2_FACTOR_T_PER_MWH = 0.234;
 
+// Part de la production consommée sur place par le site (autoconsommation)
+export const AUTOCONSOMMATION_RATIO = 0.6;
+
 export function computeMetrics(state: Pick<State, "producers" | "consumers" | "segments" | "alerts" | "batteries">) {
   const production = state.producers.reduce((a, p) => a + p.puissance * (p.disponibilite / 100), 0);
+  const autoconsommation = production * AUTOCONSOMMATION_RATIO;
+  const energieDistribuee = Math.max(0, production - autoconsommation);
   const consommation = state.consumers.reduce((a, c) => a + c.consommation, 0);
   const rendement = production > 0 ? Math.min(100, (consommation / production) * 100) : 0;
   const co2Evite = consommation * CO2_FACTOR_T_PER_MWH * 8760;
