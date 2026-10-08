@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Preserve the existing producer route and store schema when changing equipment terminology; normalize legacy demo names during persistence merging to keep saved IDs, measurements and related records intact.

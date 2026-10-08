@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore, computeMetrics } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Zap, Gauge, Leaf, Factory, AlertTriangle, Battery } from "lucide-react";
+import { Flame, Zap, Gauge, Leaf, AlertTriangle, Battery } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, CartesianGrid, Area, AreaChart,
@@ -12,6 +12,10 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Tableau de bord — HeatNet" },
       { name: "description", content: "Vue d'ensemble du réseau de chaleur : production, consommation, rendement, CO₂ évité, stockage." },
+      { property: "og:title", content: "Tableau de bord — HeatNet" },
+      { property: "og:description", content: "Vue d'ensemble du réseau de chaleur : production, consommation, rendement, CO₂ évité, stockage." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,
@@ -76,7 +80,7 @@ function Dashboard() {
         <p className="text-sm opacity-90">Supervision temps réel</p>
         <h2 className="text-2xl font-bold md:text-3xl">Réseau de chaleur fatale</h2>
         <p className="mt-1 text-sm opacity-90">
-          {state.producers.length} usines · {state.consumers.length} bâtiments · {state.batteries.length} blocs BESS · {m.alertesActives} alerte(s) active(s)
+          {state.producers.length} fours · {state.consumers.length} bâtiments · {state.batteries.length} blocs BESS · {m.alertesActives} alerte(s) active(s)
         </p>
       </div>
 
@@ -86,7 +90,7 @@ function Dashboard() {
         <KpiCard icon={Gauge} label="Rendement" value={m.rendement.toFixed(1)} unit="%" tint="blue" />
         <KpiCard icon={Leaf} label="CO₂ évité / an" value={(m.co2Evite / 1000).toFixed(1)} unit="kt" tint="green" />
         <KpiCard icon={Battery} label="Charge batt." value={m.chargeMoyenne.toFixed(0)} unit="%" tint="green" />
-        <KpiCard icon={Factory} label="Usines" value={String(m.nbUsines)} tint="orange" />
+        <KpiCard icon={Flame} label="Fours" value={String(m.nbFours)} tint="orange" />
         <KpiCard icon={AlertTriangle} label="Alertes" value={String(m.alertesActives)} tint="red" />
       </div>
 
@@ -109,7 +113,7 @@ function Dashboard() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Production par usine (MW)</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Production par four (MW)</CardTitle></CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer>
               <BarChart data={producerData}>

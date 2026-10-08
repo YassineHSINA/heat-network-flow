@@ -24,6 +24,10 @@ export const Route = createFileRoute("/batteries")({
     meta: [
       { title: "Stockage batteries — HeatNet" },
       { name: "description", content: "Supervision des blocs de stockage : charge, puissance, cycles, état temps réel." },
+      { property: "og:title", content: "Stockage batteries — HeatNet" },
+      { property: "og:description", content: "Supervision des blocs de stockage : charge, puissance, cycles, état temps réel." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Page,

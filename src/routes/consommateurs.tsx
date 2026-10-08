@@ -17,6 +17,10 @@ export const Route = createFileRoute("/consommateurs")({
     meta: [
       { title: "Consommateurs — HeatNet" },
       { name: "description", content: "Bâtiments alimentés par le réseau de chaleur." },
+      { property: "og:title", content: "Consommateurs — HeatNet" },
+      { property: "og:description", content: "Bâtiments alimentés par le réseau de chaleur." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Page,
