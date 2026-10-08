@@ -167,6 +167,21 @@ function Dashboard() {
         </Card>
 
         <Card>
+          <CardHeader><CardTitle className="text-base">Répartition de l'énergie produite (MW)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={repartition} dataKey="value" nameKey="name" outerRadius={90} label>
+                  {repartition.map((_, i) => <Cell key={i} fill={REPARTITION_COLORS[i]} />)}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader><CardTitle className="text-base">Priorités consommateurs</CardTitle></CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer>
