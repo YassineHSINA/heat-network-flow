@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore, computeMetrics } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Zap, Gauge, Leaf, AlertTriangle, Battery } from "lucide-react";
+import { Flame, Zap, Gauge, Leaf, AlertTriangle, Battery, Factory, Share2 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, CartesianGrid, Area, AreaChart,
@@ -69,6 +69,11 @@ function Dashboard() {
     name: p,
     value: state.consumers.filter((c) => c.priorite === p).length,
   }));
+  const repartition = [
+    { name: "Autoconsommation site", value: +m.autoconsommation.toFixed(2) },
+    { name: "Distribuée au réseau", value: +m.energieDistribuee.toFixed(2) },
+  ];
+  const REPARTITION_COLORS = ["var(--color-chart-2)", "var(--color-chart-1)"];
   const COLORS = ["var(--color-chart-2)", "var(--color-chart-1)", "var(--color-chart-3)"];
 
   return (
